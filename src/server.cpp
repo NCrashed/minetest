@@ -293,10 +293,16 @@ Server::Server(
 				"\": Mod name does not follow naming conventions: "
 				"Only chararacters [a-z0-9_] are allowed.");
 		}
-		std::string script_path = mod.path + DIR_DELIM + "init.lua";
-		infostream << "  [" << padStringRight(mod.name, 12) << "] [\""
-				<< script_path << "\"]" << std::endl;
-		m_script->loadMod(script_path, mod.name);
+		if (!mod.is_native) {
+			std::string script_path = mod.path + DIR_DELIM + "init.lua";
+			infostream << "  [" << padStringRight(mod.name, 12) << "] [\""
+					<< script_path << "\"]" << std::endl;
+			m_script->loadMod(script_path, mod.name);
+		} else {
+			infostream << "  [" << padStringRight(mod.name, 12) << "] [\""
+					<< mod.native_path << "\"]" << std::endl;
+			m_script->loadNativeMod(mod.native_path, mod.name);
+		}
 	}
 
 	// Read Textures and calculate sha1 sums

@@ -128,6 +128,14 @@ void ScriptApiBase::loadMod(const std::string &script_path,
 	loadScript(script_path);
 }
 
+void ScriptApiBase::loadNativeMod(const std::string &shared_path
+		, const std::string &mod_name)
+{
+	ModNameStorer mod_name_storer(getStack(), mod_name);
+
+	// TODO
+}
+
 void ScriptApiBase::loadScript(const std::string &script_path)
 {
 	verbosestream << "Loading and running script from " << script_path << std::endl;

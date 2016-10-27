@@ -66,6 +66,7 @@ public:
 
 	// These throw a ModError on failure
 	void loadMod(const std::string &script_path, const std::string &mod_name);
+	void loadNativeMod(const std::string &shared_path, const std::string &mod_name);
 	void loadScript(const std::string &script_path);
 
 	void runCallbacksRaw(int nargs,
