@@ -104,6 +104,13 @@ std::map<std::string, ModSpec> getModsInPath(std::string path, bool part_of_modp
 
 		ModSpec spec(modname, modpath);
 		spec.part_of_modpack = part_of_modpack;
+
+		std::string native_path = modpath + DIR_DELIM + "mod.so"; // TODO: platform independent extentions
+		if (fs::PathExists(native_path)) {
+			spec.is_native = true;
+			spec.native_path = native_path;
+		}
+
 		parseModContents(spec);
 		result.insert(std::make_pair(modname, spec));
 	}

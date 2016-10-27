@@ -44,6 +44,11 @@ struct ModSpec
 	bool is_modpack;
 	// if modpack:
 	std::map<std::string,ModSpec> modpack_content;
+
+	// if native mod:
+	bool is_native;
+	std::string native_path;
+
 	ModSpec(const std::string &name_="", const std::string &path_=""):
 		name(name_),
 		path(path_),
@@ -52,7 +57,9 @@ struct ModSpec
 		unsatisfied_depends(),
 		part_of_modpack(false),
 		is_modpack(false),
-		modpack_content()
+		modpack_content(),
+		is_native(false),
+		native_path("")
 	{}
 };
 
