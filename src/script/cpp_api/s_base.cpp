@@ -41,6 +41,7 @@ extern "C" {
 #include <stdio.h>
 #include <cstdarg>
 
+#include <dlfcn.h> // TODO: change this to platform independent loader
 
 class ModNameStorer
 {
@@ -62,7 +63,8 @@ public:
 	}
 };
 
-
+// intialise haskell runtime
+extern "C" void hs_init(int *argc, char **argv[]);
 /*
 	ScriptApiBase
 */
@@ -113,11 +115,21 @@ ScriptApiBase::ScriptApiBase() :
 	m_server = NULL;
 	m_environment = NULL;
 	m_guiengine = NULL;
+
+	m_native_lib = NULL;
+
+	static char *argv[] = { "mintest", 0 }, **argv_ = argv;
+  static int argc = 1;
+  hs_init(&argc, &argv_);
 }
 
 ScriptApiBase::~ScriptApiBase()
 {
 	lua_close(m_luastack);
+
+	if (m_native_lib != NULL) {
+		dlclose(m_native_lib);
+	}
 }
 
 void ScriptApiBase::loadMod(const std::string &script_path,
@@ -128,12 +140,48 @@ void ScriptApiBase::loadMod(const std::string &script_path,
 	loadScript(script_path);
 }
 
+typedef char *(*someFunc)(const char *);
+typedef void (*modInit)();
+typedef void (*modExit)();
+
 void ScriptApiBase::loadNativeMod(const std::string &shared_path
 		, const std::string &mod_name)
 {
-	ModNameStorer mod_name_storer(getStack(), mod_name);
+	someFunc func;
+	modInit initFunc;
+	modExit exitFunc;
 
-	// TODO
+	if ( (m_native_lib = dlopen(shared_path.c_str(), RTLD_LAZY)) == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load native mod from " +
+				shared_path + ":\n" + error_msg);
+  }
+
+  func = (someFunc)dlsym(m_native_lib, "someFunc");
+  if (func == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load function from " +
+				shared_path + ":\n" + error_msg);
+  }
+
+  initFunc = (modInit)dlsym(m_native_lib, "modInit");
+  if (initFunc == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load function from " +
+				shared_path + ":\n" + error_msg);
+  }
+
+  exitFunc = (modExit)dlsym(m_native_lib, "modExit");
+  if (exitFunc == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load function from " +
+				shared_path + ":\n" + error_msg);
+  }
+
+ 	initFunc();
+  char *msg = func("NCrashed");
+  printf("%s\n", msg);
+  exitFunc();
 }
 
 void ScriptApiBase::loadScript(const std::string &script_path)

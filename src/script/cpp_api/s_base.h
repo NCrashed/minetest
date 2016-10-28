@@ -124,6 +124,8 @@ private:
 	Server*         m_server;
 	Environment*    m_environment;
 	GUIEngine*      m_guiengine;
+
+	void*           m_native_lib;
 };
 
 #endif /* S_BASE_H_ */
