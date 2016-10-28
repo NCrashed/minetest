@@ -122,6 +122,7 @@ ScriptApiBase::~ScriptApiBase()
 	for (std::vector<NativeLibraryHandle>::iterator it = m_native_handles.begin();
 			it != m_native_handles.end(); ++it) {
 		const NativeLibraryHandle &handle = *it;
+		verbosestream << "Calling exit function from " << handle.shared_path << std::endl;
 		handle.exit_function();
 	}
 }
@@ -138,6 +139,7 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
 		, const std::string &mod_name)
 {
 	NativeLibraryHandle handle;
+	handle.shared_path = shared_path;
 
 	if ( (handle.native_lib = dlopen(shared_path.c_str(), RTLD_LAZY)) == NULL) {
 		std::string error_msg = dlerror();
@@ -160,6 +162,7 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
   }
 
   m_native_handles.push_back(handle);
+  verbosestream << "Calling init function from " << shared_path << std::endl;
  	handle.init_function();
 }
 

@@ -69,9 +69,10 @@ typedef void (*nativeModExitFunction)();
 
 // Store destructor of native library to unload it on exit
 struct NativeLibraryHandle {
-	void *native_lib;
-	nativeModInitFunction init_function;
-	nativeModExitFunction exit_function;
+	std::string shared_path; // path to shared library
+	void *native_lib; // pointer to loaded native library
+	nativeModInitFunction init_function; // initialisation function
+	nativeModExitFunction exit_function; // destructor function
 };
 
 class ScriptApiBase {
