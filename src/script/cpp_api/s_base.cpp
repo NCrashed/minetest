@@ -134,25 +134,14 @@ void ScriptApiBase::loadMod(const std::string &script_path,
 	loadScript(script_path);
 }
 
-typedef char *(*someFunc)(const char *);
-
-
 void ScriptApiBase::loadNativeMod(const std::string &shared_path
 		, const std::string &mod_name)
 {
-	someFunc func;
 	NativeLibraryHandle handle;
 
 	if ( (handle.native_lib = dlopen(shared_path.c_str(), RTLD_LAZY)) == NULL) {
 		std::string error_msg = dlerror();
 		throw ModError("Failed to load native mod from " +
-				shared_path + ":\n" + error_msg);
-  }
-
-  func = (someFunc)dlsym(handle.native_lib, "someFunc");
-  if (func == NULL) {
-		std::string error_msg = dlerror();
-		throw ModError("Failed to load function from " +
 				shared_path + ":\n" + error_msg);
   }
 
@@ -171,10 +160,7 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
   }
 
   m_native_handles.push_back(handle);
-
  	handle.init_function();
-  char *msg = func("NCrashed");
-  printf("%s\n", msg);
 }
 
 void ScriptApiBase::loadScript(const std::string &script_path)
