@@ -105,7 +105,7 @@ std::map<std::string, ModSpec> getModsInPath(std::string path, bool part_of_modp
 		ModSpec spec(modname, modpath);
 		spec.part_of_modpack = part_of_modpack;
 
-		std::string native_path = modpath + DIR_DELIM + "mod.so"; // TODO: platform independent extentions
+		std::string native_path = modpath + DIR_DELIM + "libmod.so"; // TODO: platform independent name of libraries
 		if (fs::PathExists(native_path)) {
 			spec.is_native = true;
 			spec.native_path = native_path;

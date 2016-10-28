@@ -163,7 +163,7 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
 
   m_native_handles.push_back(handle);
   verbosestream << "Calling init function from " << shared_path << std::endl;
- 	handle.init_function();
+ 	handle.init_function(m_server);
 }
 
 void ScriptApiBase::loadScript(const std::string &script_path)

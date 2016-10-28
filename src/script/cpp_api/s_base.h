@@ -64,7 +64,7 @@ class ServerActiveObject;
 #define MOD_INIT_FUNCTION_NAME "modInit"
 #define MOD_EXIT_FUNCTION_NAME "modExit"
 
-typedef void (*nativeModInitFunction)();
+typedef void (*nativeModInitFunction)(Server*);
 typedef void (*nativeModExitFunction)();
 
 // Store destructor of native library to unload it on exit
