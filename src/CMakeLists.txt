@@ -5,17 +5,6 @@ project(minetest)
 INCLUDE(CheckIncludeFiles)
 INCLUDE(CheckLibraryExists)
 
-LINK_DIRECTORIES(
-	/home/ncrashed/.stack/programs/x86_64-linux/ghc-8.0.1/lib/ghc-8.0.1/rts
-	/home/ncrashed/.stack/programs/x86_64-linux/ghc-8.0.1/lib/ghc-8.0.1/base-4.9.0.0
-	/home/ncrashed/.stack/programs/x86_64-linux/ghc-8.0.1/lib/ghc-8.0.1/ghc-prim-0.5.0.0
-	/home/ncrashed/.stack/programs/x86_64-linux/ghc-8.0.1/lib/ghc-8.0.1/integer-gmp-1.0.0.1)
-
-set (HASKELL_RTS HSrts-ghc8.0.1)
-set (HASKELL_BASE HSbase-4.9.0.0-ghc8.0.1)
-set (HASKELL_PRIM HSghc-prim-0.5.0.0-ghc8.0.1)
-set (HASKELL_INTEGER_GMP HSinteger-gmp-1.0.0.1-ghc8.0.1)
-
 # Add custom SemiDebug build mode
 set(CMAKE_CXX_FLAGS_SEMIDEBUG "-O1 -g -Wall -Wabi" CACHE STRING
 	"Flags used by the C++ compiler during semidebug builds."
@@ -594,13 +583,6 @@ set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/bin")
 if(BUILD_CLIENT)
 	add_executable(${PROJECT_NAME} ${client_SRCS})
 	add_dependencies(${PROJECT_NAME} GenerateVersion)
-	target_link_libraries(${PROJECT_NAME}
-		${HASKELL_RTS}
-		${HASKELL_BASE}
-		${HASKELL_PRIM}
-		${HASKELL_INTEGER_GMP}
-		)
-
 	set(client_LIBS
 		${PROJECT_NAME}
 		${ZLIB_LIBRARIES}
@@ -679,10 +661,6 @@ if(BUILD_SERVER)
 		${LUA_LIBRARY}
 		${GMP_LIBRARY}
 		${PLATFORM_LIBS}
-		${HASKELL_RTS}
-		${HASKELL_BASE}
-		${HASKELL_PRIM}
-		${HASKELL_INTEGER_GMP}
 	)
 	set_target_properties(${PROJECT_NAME}server PROPERTIES
 			COMPILE_DEFINITIONS "SERVER")

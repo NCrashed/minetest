@@ -63,8 +63,6 @@ public:
 	}
 };
 
-// intialise haskell runtime
-extern "C" void hs_init(int *argc, char **argv[]);
 /*
 	ScriptApiBase
 */
@@ -115,20 +113,16 @@ ScriptApiBase::ScriptApiBase() :
 	m_server = NULL;
 	m_environment = NULL;
 	m_guiengine = NULL;
-
-	m_native_lib = NULL;
-
-	static char *argv[] = { "mintest", 0 }, **argv_ = argv;
-  static int argc = 1;
-  hs_init(&argc, &argv_);
 }
 
 ScriptApiBase::~ScriptApiBase()
 {
 	lua_close(m_luastack);
 
-	if (m_native_lib != NULL) {
-		dlclose(m_native_lib);
+	for (std::vector<NativeLibraryHandle>::iterator it = m_native_handles.begin();
+			it != m_native_handles.end(); ++it) {
+		const NativeLibraryHandle &handle = *it;
+		handle.exit_function();
 	}
 }
 
@@ -141,47 +135,46 @@ void ScriptApiBase::loadMod(const std::string &script_path,
 }
 
 typedef char *(*someFunc)(const char *);
-typedef void (*modInit)();
-typedef void (*modExit)();
+
 
 void ScriptApiBase::loadNativeMod(const std::string &shared_path
 		, const std::string &mod_name)
 {
 	someFunc func;
-	modInit initFunc;
-	modExit exitFunc;
+	NativeLibraryHandle handle;
 
-	if ( (m_native_lib = dlopen(shared_path.c_str(), RTLD_LAZY)) == NULL) {
+	if ( (handle.native_lib = dlopen(shared_path.c_str(), RTLD_LAZY)) == NULL) {
 		std::string error_msg = dlerror();
 		throw ModError("Failed to load native mod from " +
 				shared_path + ":\n" + error_msg);
   }
 
-  func = (someFunc)dlsym(m_native_lib, "someFunc");
+  func = (someFunc)dlsym(handle.native_lib, "someFunc");
   if (func == NULL) {
 		std::string error_msg = dlerror();
 		throw ModError("Failed to load function from " +
 				shared_path + ":\n" + error_msg);
   }
 
-  initFunc = (modInit)dlsym(m_native_lib, "modInit");
-  if (initFunc == NULL) {
+  handle.init_function = (nativeModInitFunction)dlsym(handle.native_lib, MOD_INIT_FUNCTION_NAME);
+  if (handle.init_function == NULL) {
 		std::string error_msg = dlerror();
-		throw ModError("Failed to load function from " +
+		throw ModError("Failed to load initilistaion function from " +
 				shared_path + ":\n" + error_msg);
   }
 
-  exitFunc = (modExit)dlsym(m_native_lib, "modExit");
-  if (exitFunc == NULL) {
+  handle.exit_function = (nativeModExitFunction)dlsym(handle.native_lib, MOD_EXIT_FUNCTION_NAME);
+  if (handle.exit_function == NULL) {
 		std::string error_msg = dlerror();
-		throw ModError("Failed to load function from " +
+		throw ModError("Failed to load destruction function from " +
 				shared_path + ":\n" + error_msg);
   }
 
- 	initFunc();
+  m_native_handles.push_back(handle);
+
+ 	handle.init_function();
   char *msg = func("NCrashed");
   printf("%s\n", msg);
-  exitFunc();
 }
 
 void ScriptApiBase::loadScript(const std::string &script_path)

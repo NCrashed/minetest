@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 extern "C" {
 #include <lua.h>
@@ -58,6 +59,20 @@ class Server;
 class Environment;
 class GUIEngine;
 class ServerActiveObject;
+
+// Names for native mod symbols
+#define MOD_INIT_FUNCTION_NAME "modInit"
+#define MOD_EXIT_FUNCTION_NAME "modExit"
+
+typedef void (*nativeModInitFunction)();
+typedef void (*nativeModExitFunction)();
+
+// Store destructor of native library to unload it on exit
+struct NativeLibraryHandle {
+	void *native_lib;
+	nativeModInitFunction init_function;
+	nativeModExitFunction exit_function;
+};
 
 class ScriptApiBase {
 public:
@@ -125,7 +140,7 @@ private:
 	Environment*    m_environment;
 	GUIEngine*      m_guiengine;
 
-	void*           m_native_lib;
+	std::vector<NativeLibraryHandle> m_native_handles;
 };
 
 #endif /* S_BASE_H_ */
