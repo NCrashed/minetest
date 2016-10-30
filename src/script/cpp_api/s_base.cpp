@@ -154,6 +154,20 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
 				shared_path + ":\n" + error_msg);
   }
 
+  handle.init_environment_function = (nativeModInitEnvironment)dlsym(handle.native_lib, MOD_INIT_ENV_FUNCTION_NAME);
+  if (handle.init_environment_function == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load initilistaion function from " +
+				shared_path + ":\n" + error_msg);
+  }
+
+  handle.init_gui_function = (nativeModInitGUIEngine)dlsym(handle.native_lib, MOD_INIT_GUI_FUNCTION_NAME);
+  if (handle.init_gui_function == NULL) {
+		std::string error_msg = dlerror();
+		throw ModError("Failed to load initilistaion function from " +
+				shared_path + ":\n" + error_msg);
+  }
+
   handle.exit_function = (nativeModExitFunction)dlsym(handle.native_lib, MOD_EXIT_FUNCTION_NAME);
   if (handle.exit_function == NULL) {
 		std::string error_msg = dlerror();
@@ -163,7 +177,27 @@ void ScriptApiBase::loadNativeMod(const std::string &shared_path
 
   m_native_handles.push_back(handle);
   verbosestream << "Calling init function from " << shared_path << std::endl;
- 	handle.init_function(m_server, m_environment, m_guiengine);
+ 	handle.init_function(m_server);
+}
+
+void ScriptApiBase::callNativesInitEnvironment()
+{
+	for (std::vector<NativeLibraryHandle>::iterator it = m_native_handles.begin();
+			it != m_native_handles.end(); ++it) {
+		const NativeLibraryHandle &handle = *it;
+		verbosestream << "Calling init environment function from " << handle.shared_path << std::endl;
+		handle.init_environment_function(m_environment);
+	}
+}
+
+void ScriptApiBase::callNativesInitGUIEngine()
+{
+	for (std::vector<NativeLibraryHandle>::iterator it = m_native_handles.begin();
+			it != m_native_handles.end(); ++it) {
+		const NativeLibraryHandle &handle = *it;
+		verbosestream << "Calling init gui function from " << handle.shared_path << std::endl;
+		handle.init_gui_function(m_guiengine);
+	}
 }
 
 void ScriptApiBase::loadScript(const std::string &script_path)

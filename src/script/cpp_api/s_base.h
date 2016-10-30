@@ -62,9 +62,13 @@ class ServerActiveObject;
 
 // Names for native mod symbols
 #define MOD_INIT_FUNCTION_NAME "modInit"
+#define MOD_INIT_ENV_FUNCTION_NAME "modInitEnvironment"
+#define MOD_INIT_GUI_FUNCTION_NAME "modInitGUIEngine"
 #define MOD_EXIT_FUNCTION_NAME "modExit"
 
-typedef void (*nativeModInitFunction)(Server*, Environment*, GUIEngine*);
+typedef void (*nativeModInitFunction)(Server*);
+typedef void (*nativeModInitEnvironment)(Environment*);
+typedef void (*nativeModInitGUIEngine)(GUIEngine*);
 typedef void (*nativeModExitFunction)();
 
 // Store destructor of native library to unload it on exit
@@ -72,6 +76,8 @@ struct NativeLibraryHandle {
 	std::string shared_path; // path to shared library
 	void *native_lib; // pointer to loaded native library
 	nativeModInitFunction init_function; // initialisation function
+	nativeModInitEnvironment init_environment_function; // initialisation of environment function
+	nativeModInitGUIEngine init_gui_function; // initialisation of gui engine function
 	nativeModExitFunction exit_function; // destructor function
 };
 
@@ -118,10 +124,10 @@ protected:
 	void setServer(Server* server) { m_server = server; }
 
 	Environment* getEnv() { return m_environment; }
-	void setEnv(Environment* env) { m_environment = env; }
+	void setEnv(Environment* env) { m_environment = env; callNativesInitEnvironment(); }
 
 	GUIEngine* getGuiEngine() { return m_guiengine; }
-	void setGuiEngine(GUIEngine* guiengine) { m_guiengine = guiengine; }
+	void setGuiEngine(GUIEngine* guiengine) { m_guiengine = guiengine; callNativesInitGUIEngine(); }
 
 	void objectrefGetOrCreate(lua_State *L, ServerActiveObject *cobj);
 	void objectrefGet(lua_State *L, u16 id);
@@ -142,6 +148,9 @@ private:
 	GUIEngine*      m_guiengine;
 
 	std::vector<NativeLibraryHandle> m_native_handles;
+
+	void callNativesInitEnvironment();
+	void callNativesInitGUIEngine();
 };
 
 #endif /* S_BASE_H_ */
